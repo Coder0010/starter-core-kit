@@ -1,0 +1,48 @@
+{
+    "name": "mkamel/starter-core-kit",
+    "description": "A reusable Laravel starter kit for custom exception handling, middleware, and shared utilities.",
+    "keywords": [
+        "laravel",
+        "package",
+        "starter-kit",
+        "exception-handler",
+        "middleware"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mostafa Kamel",
+            "email": "mostafakamel000@email.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0 || ^11.0"
+    },
+    "require-dev": {
+        "laravel/framework": "^10.0 || ^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mkamel\\StarterCoreKit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mkamel\\StarterCoreKit\\Tests\\": "src/tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mkamel\\StarterCoreKit\\CoreServiceProvider"
+            ]
+        }
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "scripts": {
+        "test": "phpunit"
+    }
+}
