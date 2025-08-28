@@ -1,13 +1,12 @@
 <?php
 
-namespace Mkamel\StarterCoreKit;
+namespace MkamelMasoud\StarterCoreKit;
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\ServiceProvider;
-use Mkamel\StarterCoreKit\Exceptions\ExceptionHandler as CoreStarterKitExceptionHandler;
-use Mkamel\StarterCoreKit\Middleware\ApiCheckHeadersMiddleware;
-use Mkamel\StarterCoreKit\Middleware\CustomPreventRequestsDuringMaintenance;
-use Mkamel\StarterCoreKit\Middleware\SetLocaleFromHeaderMiddleware;
+use MkamelMasoud\StarterCoreKit\Exceptions\ExceptionHandler as CoreStarterKitExceptionHandler;
+use MkamelMasoud\StarterCoreKit\Middleware\ApiCheckHeadersMiddleware;
+use MkamelMasoud\StarterCoreKit\Middleware\SetLocaleFromHeaderMiddleware;
 
 class CoreServiceProvider extends ServiceProvider
 {
@@ -24,15 +23,12 @@ class CoreServiceProvider extends ServiceProvider
         $kernal = app(\Illuminate\Contracts\Http\Kernel::class)
             ->pushMiddleware(SetLocaleFromHeaderMiddleware::class)
             ->pushMiddleware(ApiCheckHeadersMiddleware::class)
-//            ->prependMiddlewareToGroup('api', ApiCheckHeaders::class)
         ;
 
         // Publish migrations and seeders together with one tag
         $this->publishes([
             __DIR__.'/config.php' => config_path('starter-core-kit.php'),
             __DIR__.'/lang' => resource_path('lang/starter-core-kit'),
-            // __DIR__.'/database/migrations/2025_05_26_0001_create_exceptions_table.php' => database_path('migrations/2025_05_26_0001_create_exceptions_table.php'),
-            // __DIR__.'/database/seeders/ExceptionRecordSeeder.php' => database_path('seeders/ExceptionRecordSeeder.php'),
         ], 'starter-core-kit');
 
         // Load translations

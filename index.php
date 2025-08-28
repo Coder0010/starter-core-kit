@@ -27,7 +27,7 @@
         <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Installation</h2>
             <div class="bg-gray-100 p-4 rounded-md">
-                <code class="text-sm">composer require mkamel/starter-core-kit</code>
+                <code class="text-sm">composer require mkamelmasoud/starter-core-kit</code>
             </div>
             <p class="mt-4 text-gray-700">After installation, the package will automatically register its service provider.</p>
         </div>
@@ -42,7 +42,7 @@
 
         <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Documentation</h2>
-            <p class="text-gray-700">For complete documentation, please refer to the <a href="https://github.com/mkamel/starter-core-kit" class="text-indigo-600 hover:underline">GitHub repository</a> or check the README.md file included with this package.</p>
+            <p class="text-gray-700">For complete documentation, please refer to the <a href="https://github.com/mkamelmasoud/starter-core-kit" class="text-indigo-600 hover:underline">GitHub repository</a> or check the README.md file included with this package.</p>
         </div>
 
         <div class="border-t pt-6 text-center text-gray-600 text-sm">

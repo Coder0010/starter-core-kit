@@ -6,8 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-interface MiddlewareInterface
+interface SortableInterface
 {
-    public function handle(Request $request, Closure $next): Response;
+    public function setSortableColumns(array $sortableColumns): void;
 
 }

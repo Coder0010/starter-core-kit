@@ -1,11 +1,10 @@
 <?php
 
-namespace Mkamel\StarterCoreKit\Exceptions;
+namespace MkamelMasoud\StarterCoreKit\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as LaravelHandler;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use MkamelMasoud\StarterCoreKit\Interfaces\ExceptionInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -18,27 +17,35 @@ class ExceptionHandler extends LaravelHandler
 
             foreach ($exceptionResponses as $exceptionClass => $response) {
                 if ($e instanceof $exceptionClass) {
-                    $payload = [
-                        'type' => 'Custom Exception',
-                        'status'  => $response['status'],
+                    $customPayload = [
+                        'status_code' => $response['status_code'],
                         'message' => __($response['message']),
                     ];
 
-                    if ($e instanceof ValidationException) {
-                        $payload['errors'] = $e->errors();
+                    if(config('app.debug')){
+                        $customPayload['exception_type'] = 'Custom Exception';
+                        $customPayload['file'] = $e->getFile();
                     }
 
-                    return response()->json($payload, $response['status']);
+                    if ($e instanceof ValidationException) {
+                        $customPayload['errors'] = $e->errors();
+                    }
+
+                    return response()->json($customPayload, $response['status_code']);
                 }
             }
 
             \Log::warning($e);
 
-            return response()->json([
-                'type' => 'Default Exception',
-                'status'  => Response::HTTP_INTERNAL_SERVER_ERROR,
-                'message' => __('starter-core-kit::exceptions.internal_server_error'),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            $defaultPayload = [
+                'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => config('app.debug') ? $e->getMessage() : __('starter-core-kit::exceptions.internal_server_error'),
+            ];
+            if(config('app.debug')){
+                $defaultPayload['exception_type'] = 'Default Exception';
+                $defaultPayload['file'] = $e->getFile();
+            }
+            return response()->json($defaultPayload, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return parent::render($request, $e);

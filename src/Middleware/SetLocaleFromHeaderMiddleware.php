@@ -1,10 +1,10 @@
 <?php
 
-namespace Mkamel\StarterCoreKit\Middleware;
+namespace MkamelMasoud\StarterCoreKit\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Mkamel\StarterCoreKit\Interfaces\MiddlewareInterface;
+use MkamelMasoud\StarterCoreKit\Interfaces\MiddlewareInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetLocaleFromHeaderMiddleware implements MiddlewareInterface
