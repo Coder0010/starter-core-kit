@@ -4,10 +4,10 @@ namespace MkamelMasoud\StarterCoreKit\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use MkamelMasoud\StarterCoreKit\Interfaces\MiddlewareInterface;
+use MkamelMasoud\StarterCoreKit\Contracts\MiddlewareContract;
 use Symfony\Component\HttpFoundation\Response;
 
-class SetLocaleFromHeaderMiddleware implements MiddlewareInterface
+class SetLocaleFromHeaderMiddleware implements MiddlewareContract
 {
 
     public function handle(Request $request, Closure $next): Response

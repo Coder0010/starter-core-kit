@@ -1,10 +1,9 @@
 <?php
 
-namespace MkamelMasoud\StarterCoreKit\Exceptions;
+namespace MkamelMasoud\StarterCoreKit;
 
 use Illuminate\Foundation\Exceptions\Handler as LaravelHandler;
 use Illuminate\Validation\ValidationException;
-use MkamelMasoud\StarterCoreKit\Interfaces\ExceptionInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 

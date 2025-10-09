@@ -5,10 +5,10 @@ namespace MkamelMasoud\StarterCoreKit\Middleware;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use MkamelMasoud\StarterCoreKit\Interfaces\MiddlewareInterface;
+use MkamelMasoud\StarterCoreKit\Contracts\MiddlewareContract;
 use Symfony\Component\HttpFoundation\Response;
 
-class ApiCheckHeadersMiddleware implements MiddlewareInterface
+class ApiCheckHeadersMiddleware implements MiddlewareContract
 {
     public function handle(Request $request, Closure $next): Response
     {

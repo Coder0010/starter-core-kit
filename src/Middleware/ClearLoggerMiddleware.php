@@ -3,12 +3,12 @@
 namespace MkamelMasoud\StarterCoreKit\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
-use MkamelMasoud\StarterCoreKit\Interfaces\MiddlewareInterface;
-use Symfony\Component\HttpFoundation\Response;
 use File;
+use Illuminate\Http\Request;
+use MkamelMasoud\StarterCoreKit\Contracts\MiddlewareContract;
+use Symfony\Component\HttpFoundation\Response;
 
-class ClearLoggerMiddleware implements MiddlewareInterface
+class ClearLoggerMiddleware implements MiddlewareContract
 {
     public function handle(Request $request, Closure $next): Response
     {

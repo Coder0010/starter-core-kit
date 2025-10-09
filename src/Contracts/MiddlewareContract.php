@@ -1,12 +1,12 @@
 <?php
 
-namespace MkamelMasoud\StarterCoreKit\Interfaces;
+namespace MkamelMasoud\StarterCoreKit\Contracts;
 
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-interface MiddlewareInterface
+interface MiddlewareContract
 {
     public function handle(Request $request, Closure $next): Response;
 
