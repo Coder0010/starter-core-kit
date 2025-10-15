@@ -5,7 +5,9 @@ namespace MkamelMasoud\StarterCoreKit\Repositories;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
-use MkamelMasoud\StarterCoreKit\Contracts\BaseRepositoryContract;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use MkamelMasoud\StarterCoreKit\Repositories\Contracts\BaseRepositoryContract;
 
 abstract class BaseEloquentRepository implements BaseRepositoryContract
 {
@@ -50,49 +52,49 @@ abstract class BaseEloquentRepository implements BaseRepositoryContract
         return $this->entity;
     }
 
-    /**
-     * Create a new entity.
-     */
-    public function create(array $data): Model
+    public function getPerPage(): int
     {
-        return $this->entity->create($data);
+        return $this->limit;
     }
 
-    /**
-     * Update an existing entity.
-     */
-    public function update(int $id, array $data): Model
+    public function find(int $id): ?Model
     {
-        $entity = $this->find($id);
-        $entity->update($data);
-        return $entity;
+        return $this->entity->with($this->relations)->find($id);
     }
 
-    /**
-     * Delete entity (single or multiple).
-     */
-    public function delete(int|array $id): bool
-    {
-        if (is_array($id)) {
-            return (bool) $this->entity->destroy($id);
-        }
-
-        $entity = $this->find($id);
-        return (bool) $entity->delete();
-    }
-
-    /**
-     * Get all records (with optional eager loading).
-     */
     public function all(): Builder
     {
         return $this->entity->newQuery()->with($this->relations);
     }
 
-    /**
-     * Paginated data.
-     */
-    public function paginate(int $limit = 0): LengthAwarePaginator
+    public function getFromCache(?string $column = null, ?string $operator = null, mixed $value = null): Collection
+    {
+        $ttl = 600; // 10 minutes
+
+        $cacheKey = $this->entity::getCacheModelName();
+
+        if ($column && $operator && $value !== null) {
+            $cacheKey .= "_search_by_{$column}_{$operator}_{$value}";
+        }
+
+        $queryCallback = function () use ($column, $operator, $value) {
+            $query = $this->entity::query()->latest();
+            if ($column && $operator && $value !== null) {
+                $query->where($column, $operator, $value);
+            }
+
+            return $query->get();
+        };
+
+        if (Cache::getStore() instanceof \Illuminate\Cache\TaggableStore) {
+            return Cache::tags([$this->entity::getCacheModelName()])
+                ->remember($cacheKey, $ttl, $queryCallback);
+        }
+        // Fallback to non-taggable
+        return Cache::remember('index_'. $cacheKey, $ttl, $queryCallback);
+    }
+
+    public function paginate(int $limit = 0)
     {
         $limit = request('limit', $limit ?: $this->limit);
 
@@ -109,18 +111,6 @@ abstract class BaseEloquentRepository implements BaseRepositoryContract
         return $result;
     }
 
-    /**
-     * Add eager load relations.
-     */
-    public function with(array|string $relations): BaseRepositoryContract
-    {
-        $this->relations = array_merge($this->relations, (array) $relations);
-        return $this;
-    }
-
-    /**
-     * Add where condition (chainable).
-     */
     public function where(string $column, string $operator, mixed $value): BaseRepositoryContract
     {
         $this->query ??= $this->entity->newQuery()->with($this->relations);
@@ -128,11 +118,34 @@ abstract class BaseEloquentRepository implements BaseRepositoryContract
         return $this;
     }
 
-    /**
-     * Find entity by ID.
-     */
-    public function find(int $id): Model
+    public function with(array|string $relations): BaseRepositoryContract
     {
-        return $this->entity->with($this->relations)->findOrFail($id);
+        $this->relations = array_merge($this->relations, (array)$relations);
+        return $this;
     }
+
+    public function create(array $data): Model
+    {
+        return $this->entity->create($data);
+    }
+
+    public function update(int $id, array $data): Model
+    {
+        $entity = $this->find($id);
+        $entity->update($data);
+        return $entity->refresh();
+    }
+
+    public function delete(int $id): bool
+    {
+        $entity = $this->find($id);
+        return (bool)$entity->delete();
+    }
+
+    public function forceDelete(int $id): bool
+    {
+        $entity = $this->find($id);
+        return (bool)$entity->forceDelete();
+    }
+
 }

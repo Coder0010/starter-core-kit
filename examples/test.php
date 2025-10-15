@@ -26,7 +26,7 @@ var_dump($obj);
 
 echo '<h1>After Serialize</h1>'. PHP_EOL;
 // When you call serialize(), PHP will call __sleep() internally
-$str = serialize($obj);  
+$str = serialize($obj);
 echo($str);
 
 echo '<h1>After Unserialize</h1>'. PHP_EOL;

@@ -5,6 +5,14 @@ use Illuminate\Http\Response;
 return [
     'version' => '1.0.0',
 
+    'supported_locales' => ['en', 'ar'],
+
+    'middlewares' => [
+        'set_locale' => env('SET_LOCALE', true),
+        'clear_logger' => env('CLEAR_LOGGER', false),
+        'api_check_headers' => env('API_CHECK_HEADERS', true),
+    ],
+
     'exceptions' => [
         \Illuminate\Database\Eloquent\ModelNotFoundException::class => [
             'status_code' => Response::HTTP_NOT_FOUND,

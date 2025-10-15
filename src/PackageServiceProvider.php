@@ -2,17 +2,18 @@
 
 namespace MkamelMasoud\StarterCoreKit;
 
-use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Debug\ExceptionHandler as LaravelContractExceptionHandler;
 use Illuminate\Support\ServiceProvider;
 use MkamelMasoud\StarterCoreKit\ExceptionHandler as CoreStarterKitExceptionHandler;
 use MkamelMasoud\StarterCoreKit\Middleware\ApiCheckHeadersMiddleware;
+use MkamelMasoud\StarterCoreKit\Middleware\ClearLoggerMiddleware;
 use MkamelMasoud\StarterCoreKit\Middleware\SetLocaleFromHeaderMiddleware;
 
 class PackageServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ExceptionHandler::class, CoreStarterKitExceptionHandler::class);
+        $this->app->singleton(LaravelContractExceptionHandler::class, CoreStarterKitExceptionHandler::class);
 
         // Merge package config from the correct path
         $this->mergeConfigFrom(__DIR__ . '/Config/config.php', 'starter-core-kit');
@@ -21,9 +22,16 @@ class PackageServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Register middleware
-        app(\Illuminate\Contracts\Http\Kernel::class)
-            ->pushMiddleware(SetLocaleFromHeaderMiddleware::class)
-            ->pushMiddleware(ApiCheckHeadersMiddleware::class);
+        $kernel = app(\Illuminate\Contracts\Http\Kernel::class);
+
+        $mw = config('starter-core-kit.middlewares', []);
+        collect([
+            SetLocaleFromHeaderMiddleware::class => $mw['set_locale'] ?? true,
+            ClearLoggerMiddleware::class         => $mw['clear_logger'] ?? false,
+            ApiCheckHeadersMiddleware::class     => $mw['api_check_headers'] ?? true,
+        ])
+            ->filter() // keeps only truthy values
+            ->each(fn($enabled, $middlewareClass) => $kernel->pushMiddleware($middlewareClass));
 
         // Publish migrations and seeders together with one tag
         $this->publishes([
@@ -43,12 +51,14 @@ class PackageServiceProvider extends ServiceProvider
 
         // // Load package migrations directly (so they run without publishing)
         // $this->loadMigrationsFrom(__DIR__.'/database/migrations');
+
+        // Bind repositories
         $this->bindRepositories();
     }
 
     public function bindRepositories(): void
     {
-         foreach (config("repositories") as $contact => $eloquent) {
+         foreach (config("repositories", []) as $contact => $eloquent) {
              $this->app->singleton($contact, $eloquent);
          }
     }
