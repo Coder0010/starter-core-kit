@@ -1,6 +1,6 @@
 <?php
 
-namespace MkamelMasoud\StarterCoreKit;
+namespace MkamelMasoud\StarterCoreKit\Core;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +20,7 @@ abstract class BaseService implements ServiceContract
 {
     use HandleFileUploadTrait, ServiceHelperTrait;
 
-    /** @var TRepo */
+    /** @var BaseRepositoryContract */
     protected BaseRepositoryContract $repository;
 
     public function __construct(BaseRepositoryContract $repository)

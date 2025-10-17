@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\RecordNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use MkamelMasoud\StarterCoreKit\BaseDto;
+use MkamelMasoud\StarterCoreKit\Core\BaseDto;
 
 interface ServiceContract
 {

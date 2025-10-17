@@ -1,6 +1,6 @@
 <?php
 
-namespace MkamelMasoud\StarterCoreKit;
+namespace MkamelMasoud\StarterCoreKit\Core;
 
 use Illuminate\Http\Request;
 

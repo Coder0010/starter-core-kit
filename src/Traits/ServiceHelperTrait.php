@@ -4,9 +4,12 @@ namespace MkamelMasoud\StarterCoreKit\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
-use MkamelMasoud\StarterCoreKit\BaseDto;
+use MkamelMasoud\StarterCoreKit\Core\BaseDto;
 use MkamelMasoud\StarterCoreKit\Repositories\Contracts\BaseRepositoryContract;
 
+/**
+ * @phpstan-template TDto of \MkamelMasoud\StarterCoreKit\Core\BaseDto
+ */
 trait ServiceHelperTrait
 {
     public function getPerPage()
@@ -47,9 +50,9 @@ trait ServiceHelperTrait
         return $dto;
     }
 
-    protected function beforeDelete($model): void
+    protected function beforeDelete(Model $model): void
     {
-        // by default leave it blank for all service 
+        // by default leave it blank for all service
     }
 
 }

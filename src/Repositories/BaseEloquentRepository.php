@@ -29,7 +29,7 @@ abstract class BaseEloquentRepository implements BaseRepositoryContract
     /**
      * Default pagination limit.
      */
-    protected int $limit = 15;
+    protected int $limit = 10;
 
     /**
      * EloquentRepository constructor.
