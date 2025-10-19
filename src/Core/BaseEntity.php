@@ -24,61 +24,35 @@ abstract class BaseEntity extends Model
     protected static function clearCache(): void
     {
         $table = static::getCacheModelName();
+
         if (Cache::getStore() instanceof TaggableStore) {
-            logger("Clear cache of table: ( {$table} ) with cache type [ taggable ]");
-            // If the cache driver supports tags, flush everything under the '{$table}' tag
+            logger("Clear cache of table: ({$table}) with cache type [taggable]");
             Cache::tags($table)->flush();
-        } elseif (Cache::getStore() instanceof \Illuminate\Cache\RedisStore) {
-            logger("Clear cache of table: ( {$table} ) with cache type [ redis] ");
-            // If using Redis directly, delete keys by prefix (for an old version of redis)
-            $redisKeys = Redis::keys($table . '*');
+            return;
+        }
+
+        if (Cache::getStore() instanceof \Illuminate\Cache\RedisStore) {
+            logger("Clear cache of table: ({$table}) with cache type [redis]");
+            $redisKeys = \Illuminate\Support\Facades\Redis::keys("{$table}:*");
+
             foreach ($redisKeys as $key) {
-                Cache::forget(Str::after($key, config('cache.prefix') . ':'));
+                // Remove Laravel cache prefix before forgetting
+                $cacheKey = \Illuminate\Support\Str::after($key, config('cache.prefix') . ':');
+                Cache::forget($cacheKey);
             }
-        } else {
-            logger("Clear cache of table: ( {$table} ) with cache type [ default ]");
-            // For file/database/other non-taggable drivers: list known keys manually
-            $keys = ["index_{$table}", "show_{$table}"];
-            foreach ($keys as $key) {
-                Cache::forget($key);
-            }
-        }
-    }
-    
-    protected static function newClearCache(string $event = 'unknown'): void
-    {
-        if (!static::$shouldClearCache) return;
-
-        $model = static::getCacheModelName();
-        $store = Cache::getStore();
-        $driver = config('cache.default');
-
-        // 1️⃣ Taggable cache
-        if ($store instanceof TaggableStore) {
-            logger("[StarterCoreKit] Cache cleared | model={$model} | driver={$driver} | type=taggable | event={$event}");
-            Cache::tags($model)->flush();
             return;
         }
 
-        // 2️⃣ Redis store
-        if ($store instanceof \Illuminate\Cache\RedisStore) {
-            logger("[StarterCoreKit] Cache cleared | model={$model} | driver={$driver} | type=redis | event={$event}");
-            $connection = $store->connection();
-            $cursor = null;
+        logger("Clear cache of table: ({$table}) with cache type [default]");
+        // For file/database/array drivers: use the same key pattern
+        $keys = [
+            "{$table}:index",
+            "{$table}:show",
+            "{$table}:all",
+            "{$table}:random",
+        ];
 
-            do {
-                [$cursor, $keys] = $connection->scan($cursor, 'MATCH', $model . '*', 'COUNT', 500);
-                foreach ($keys as $key) {
-                    $connection->del($key);
-                }
-            } while ($cursor != 0);
-
-            return;
-        }
-
-        // 3️⃣ Default (file, database, etc.)
-        logger("[StarterCoreKit] Cache cleared | model={$model} | driver={$driver} | type=default | event={$event}");
-        foreach (["index_{$model}", "show_{$model}"] as $key) {
+        foreach ($keys as $key) {
             Cache::forget($key);
         }
     }

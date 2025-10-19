@@ -1,7 +1,7 @@
 {
     "name": "mkamelmasoud/starter-core-kit",
     "description": "A reusable Laravel starter kit for custom exception handling, middleware, and shared utilities.",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "keywords": [
         "laravel",
         "package",

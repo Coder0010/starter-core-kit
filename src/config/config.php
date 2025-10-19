@@ -7,6 +7,8 @@ return [
 
     'supported_locales' => ['en', 'ar'],
 
+    'full_auth_modules' => env('APP_FULL_AUTH_MODULES', false),
+
     'middlewares' => [
         'set_locale' => env('SET_LOCALE', true),
         'clear_logger' => env('CLEAR_LOGGER', false),
@@ -65,6 +67,6 @@ return [
         \PDOException::class => [
             'status_code'  => Response::HTTP_INTERNAL_SERVER_ERROR,
             'message' => 'starter-core-kit::exceptions.pdo_exception',
-        ]
-    ]
+        ],
+    ],
 ];
