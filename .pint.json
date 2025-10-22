@@ -1,0 +1,37 @@
+{
+  "preset": "laravel",
+  "rules": {
+    "binary_operator_spaces": {
+      "operators": {
+        "=>": "align_single_space_minimal",
+        "=": "align_single_space_minimal"
+      }
+    },
+    "concat_space": {
+      "spacing": "one"
+    },
+    "no_unused_imports": true,
+    "no_spaces_inside_parenthesis": true,
+    "single_trait_insert_per_statement": true,
+    "no_multiple_statements_per_line": true,
+    "no_blank_lines_after_class_opening": true,
+    "no_extra_blank_lines": {
+      "tokens": [
+        "extra"
+      ]
+    },
+    "declare_strict_types": false,
+    "lowercase_keywords": true,
+    "lowercase_static_reference": true
+  },
+  "exclude": [
+    "vendor",
+    "storage",
+    "bootstrap/cache",
+    "tmp",
+    "examples"
+  ],
+  "notName": [
+    "*.blade.php"
+  ]
+}

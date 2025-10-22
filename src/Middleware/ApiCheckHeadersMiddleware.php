@@ -13,12 +13,12 @@ class ApiCheckHeadersMiddleware implements MiddlewareContract
     public function handle(Request $request, Closure $next): Response
     {
         // Skip validation for non-API routes
-        if (!str_starts_with($request->path(), 'api/')) {
+        if (! str_starts_with($request->path(), 'api/')) {
             return $next($request);
         }
 
         // Check for required headers
-        if (!$this->hasValidHeaders($request)) {
+        if (! $this->hasValidHeaders($request)) {
             return $this->createErrorResponse();
         }
 
@@ -38,7 +38,7 @@ class ApiCheckHeadersMiddleware implements MiddlewareContract
     {
         return response()->json([
             'status' => Response::HTTP_BAD_REQUEST,
-            'message' => __("starter-core-kit::exceptions.missing_api_headers"),
+            'message' => __('starter-core-kit::exceptions.missing_api_headers'),
         ], Response::HTTP_BAD_REQUEST);
     }
 }

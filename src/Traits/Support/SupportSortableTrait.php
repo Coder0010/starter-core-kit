@@ -1,12 +1,10 @@
 <?php
 
-namespace MkamelMasoud\StarterCoreKit\Traits;
+namespace MkamelMasoud\StarterCoreKit\Traits\Support;
 
-use Illuminate\Database\Query\Builder;
-
-trait SortableTrait
+/** @phpstan-ignore trait.unused */
+trait SupportSortableTrait
 {
-
     public function sort()
     {
         $sortableAttributes = explode(',', request()->input('sort'));
@@ -16,6 +14,7 @@ trait SortableTrait
                 $direction = 'asc';
                 $sortAttribute = substr($sortAttribute, 1);
             }
+
             return $this->orderBy($sortAttribute, $direction);
         }
     }

@@ -2,8 +2,9 @@
 
 namespace MkamelMasoud\StarterCoreKit\Providers;
 
+use Illuminate\Foundation\Application as ApplicationFoundation;
+// use Illuminate\Contracts\Foundation\Application as ApplicationContract;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Contracts\Foundation\Application;
 
 /**
  * Class RepositoryServiceProvider
@@ -11,20 +12,17 @@ use Illuminate\Contracts\Foundation\Application;
  * Binds repository interfaces to their concrete implementations
  * based on the repositories.php configuration.
  *
- * @property Application $app
+ * @property ApplicationFoundation $app
  */
 class RepositoryServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         // Bind repositories
-        foreach (config("repositories", []) as $contact => $eloquent) {
+        foreach (config('repositories', []) as $contact => $eloquent) {
             $this->app->singleton($contact, $eloquent);
         }
     }
 
-    public function boot(): void
-    {
-
-    }
+    public function boot(): void {}
 }
