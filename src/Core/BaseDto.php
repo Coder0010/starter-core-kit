@@ -9,7 +9,7 @@ abstract class BaseDto
     public function __construct(array $data = [])
     {
         foreach ($data as $key => $value) {
-            if (!property_exists($this, $key)) {
+            if (! property_exists($this, $key)) {
                 continue;
             }
 
@@ -18,6 +18,7 @@ abstract class BaseDto
             // 🔹 Handle Enums automatically
             if ($type && enum_exists($type)) {
                 $this->$key = $this->castToEnum($type, $value);
+
                 continue;
             }
 
@@ -30,7 +31,7 @@ abstract class BaseDto
      */
     public static function fromRequest(Request $request): static
     {
-        $instance = new static();
+        $instance = new static;
         $fields = array_keys(get_object_vars($instance));
 
         return new static($request->only($fields));
@@ -52,7 +53,7 @@ abstract class BaseDto
         $reflection = new \ReflectionProperty($this, $property);
         $type = $reflection->getType();
 
-        if (!$type) {
+        if (! $type) {
             return null;
         }
 
@@ -64,6 +65,7 @@ abstract class BaseDto
         if ($type instanceof \ReflectionUnionType) {
             // Example: return first type name (or handle differently)
             $types = $type->getTypes(); // array of ReflectionNamedType
+
             return $types[0]->getName(); // just pick the first one
         }
 

@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\RecordNotFoundException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use MkamelMasoud\StarterCoreKit\Core\BaseDto;
 
 interface ServiceContract
@@ -16,21 +15,16 @@ interface ServiceContract
     public function getFromCache(?string $column = null, ?string $operator = null, mixed $value = null): Collection;
 
     public function show($id): Model;
+
     /**
      * Store a new record.
-     *
-     * @param BaseDto $dto
-     * @return Model
      */
     public function store(BaseDto $dto): Model;
 
     /**
      * Update an existing record.
      *
-     * @param int $id
-     * @param BaseDto $dto
      *
-     * @return Model
      * @throws RecordNotFoundException
      */
     public function update(int $id, BaseDto $dto): Model;

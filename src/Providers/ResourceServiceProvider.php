@@ -3,7 +3,6 @@
 namespace MkamelMasoud\StarterCoreKit\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Contracts\Foundation\Application;
 
 /**
  * Class ResourceServiceProvider
@@ -25,6 +24,6 @@ class ResourceServiceProvider extends ServiceProvider
 
     protected function packagePath(string $path): string
     {
-        return __DIR__ . '/../' . ltrim($path, '/');
+        return __DIR__.'/../'.ltrim($path, '/');
     }
 }

@@ -9,5 +9,4 @@ use Symfony\Component\HttpFoundation\Response;
 interface MiddlewareContract
 {
     public function handle(Request $request, Closure $next): Response;
-
 }

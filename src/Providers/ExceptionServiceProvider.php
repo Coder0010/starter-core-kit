@@ -2,10 +2,11 @@
 
 namespace MkamelMasoud\StarterCoreKit\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Debug\ExceptionHandler as LaravelContractExceptionHandler;
-use MkamelMasoud\StarterCoreKit\ExceptionHandler as CoreStarterKitExceptionHandler;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Foundation\Application as ApplicationFoundation;
+// use Illuminate\Contracts\Foundation\Application as ApplicationContract;
+use Illuminate\Support\ServiceProvider;
+use MkamelMasoud\StarterCoreKit\Exceptions\Handler as CoreStarterKitExceptionHandler;
 
 /**
  * Class ExceptionServiceProvider
@@ -13,7 +14,7 @@ use Illuminate\Contracts\Foundation\Application;
  * Overrides Laravel's default exception handler
  * with the custom CoreStarterKit handler.
  *
- * @property Application $app
+ * @property ApplicationFoundation $app
  */
 class ExceptionServiceProvider extends ServiceProvider
 {
@@ -23,8 +24,5 @@ class ExceptionServiceProvider extends ServiceProvider
             CoreStarterKitExceptionHandler::class);
     }
 
-    public function boot(): void
-    {
-
-    }
+    public function boot(): void {}
 }

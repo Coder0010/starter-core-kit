@@ -3,30 +3,33 @@
 namespace MkamelMasoud\StarterCoreKit\Core;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\RecordNotFoundException;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use MkamelMasoud\StarterCoreKit\Repositories\Contracts\BaseRepositoryContract;
-use MkamelMasoud\StarterCoreKit\Traits\HandleFileUploadTrait;
-use MkamelMasoud\StarterCoreKit\Traits\ServiceHelperTrait;
+use MkamelMasoud\StarterCoreKit\Contracts\Repositories\BaseRepositoryContract;
+use MkamelMasoud\StarterCoreKit\Traits\File\HandleFileUploadTrait;
+use MkamelMasoud\StarterCoreKit\Traits\Service\ServiceSupportTrait;
+use MkamelMasoud\StarterCoreKit\Traits\Support\SupportCacheTrait;
+use Throwable;
 
 /**
  * @template TRepo of BaseRepositoryContract
  * @template TDto of BaseDto
- * @template TModel of Model
+ * @template TModel of EloquentModel
  *
  * @property-read TRepo $repository
  */
 abstract class BaseService
 {
-    use HandleFileUploadTrait, ServiceHelperTrait;
+    use HandleFileUploadTrait, ServiceSupportTrait, SupportCacheTrait;
 
-    /** The repository instance injected via constructor
-     * @var BaseRepositoryContract
+    /**
+     * The repository instance injected via constructor
+     *
+     * @var TRepo
      */
     protected BaseRepositoryContract $repository;
 
@@ -41,80 +44,140 @@ abstract class BaseService
     /** @return class-string<TRepo> */
     abstract protected function getRepoClass(): string;
 
-    /** @return \Illuminate\Database\Eloquent\Builder<TModel> */
-    public function all(): Builder
+    public function entity(): EloquentModel
     {
-        return $this->repository->all()->latest();
+        return $this->repository->instance();
     }
 
-    public function allPaginated(?int $limit = null): LengthAwarePaginator
+    public function getRecordsLimit(): int
     {
-        $page = request('page', 1);
-        $key = "page:{$page}";
+        return $this->repository->getRecordsLimit();
+    }
 
-        return $this->cacheRemember($key, fn() => $this->repository->allPaginated($limit));
+    public function fetchData(
+        array $filters = [],
+        string $dataTypeReturn = 'get',
+        ?int $limit = null,
+        bool $random = false,
+        string $cachePrefix = ''
+    ): EloquentCollection|EloquentBuilder|LengthAwarePaginator|SupportCollection {
+        $serializedFilters = collect($filters)
+            ->map(fn ($value, $key) => "{$key}_{$value}")
+            ->join(glue: '|');
+
+        $table = $this->entity()->getTable();
+        $cacheKey = '';
+        if ($cachePrefix != '' || $cachePrefix != null) {
+            $cacheKey .= "{$cachePrefix}-";
+        }
+        $cacheKey .= "fetch-{$table}";
+        if ($serializedFilters != '') {
+            $cacheKey .= ":{$serializedFilters}";
+        }
+//        if ($dataTypeReturn == 'paginate') {
+//            $cacheKey .= ':page_'.(request('page', 1));
+//        }
+
+        return $this->cacheRemember(
+            table: $table,
+            cacheKey: $cacheKey,
+            callBack: fn () => $this->repository->fetchData(
+                filters: $filters,
+                dataTypeReturn: $dataTypeReturn,
+                limit: $limit,
+                random: $random,
+            )
+        );
     }
 
     public function inRandomOrder(int $limit = 3): EloquentCollection
     {
-        $key = "random:limit_{$limit}";
-
-        return $this->cacheRemember($key, fn() => $this->repository->inRandomOrder($limit));
+        return $this->cacheRemember(
+            table: $this->entity()->getTable(),
+            cacheKey: "random:limit_{$limit}",
+            callBack: fn () => $this->repository->fetchData(
+                dataTypeReturn: 'builder',
+            )->inRandomOrder()
+                ->limit(value: $limit)
+                ->get()
+        );
     }
 
-    public function allFromCache(
-        ?string $column = null,
-        ?string $operator = null,
-        mixed $value = null
-    ): SupportCollection {
-        $key = "all";
+    public function search(array $filters): LengthAwarePaginator|EloquentCollection
+    {
+        ksort($filters);
+        $serializedFilters = collect($filters)
+            ->collapse()
+            ->map(fn ($v, $k) => "{$k}_".$v)
+            ->join('-');
 
-        return $this->cacheRemember($key, fn() => $this->repository->allFromCache($column, $operator, $value));
+        return $this->cacheRemember(
+            table: $this->entity()->getTable(),
+            cacheKey: "search:{$serializedFilters}",
+            callBack: fn () => $this->repository->fetchData(
+                dataTypeReturn: 'builder',
+            )
+                ->whereIn('name', $filters['name'])
+                ->get()
+        );
     }
 
     /** @return TModel */
-    public function findOrFail(int $id): Model
+    public function findOrFail(int $id): EloquentModel
     {
-        $key = "show:{$id}";
+        return $this->cacheRemember(
+            table: $this->entity()->getTable(),
+            cacheKey: "show:{$id}",
+            callBack: function () use ($id) {
+                $model = $this->repository->find(id: $id);
+                if (! $model) {
+                    throw new RecordNotFoundException("Record with id {$id} not found");
+                }
 
-        return $this->cacheRemember($key, function () use ($id) {
-            $model = $this->repository->find($id);
-            if (!$model) {
-                throw new RecordNotFoundException("Record with id {$id} not found");
+                return $model;
             }
-            return $model;
-        });
+        );
     }
 
     /** @return EloquentCollection<int, TModel> */
     public function findMany(array $ids): EloquentCollection
     {
-        $key = "many:" . implode('_', $ids);
+        $fetch = $this->repository->findMany(ids: $ids);
+        if ($fetch->isNotEmpty()) {
+            return $this->cacheRemember(
+                table: $this->entity()->getTable(),
+                cacheKey: 'many:'.implode(separator: '_', array: $ids),
+                callBack: fn () => $fetch
+            );
+        }
 
-        return $this->cacheRemember($key, fn() => $this->repository->findMany($ids));
-    }
-
-    public function search(string|array $q, string $column = 'name', ?int $limit = null): EloquentCollection
-    {
-        $query = is_array($q) ? implode('-', $q) : $q;
-        $key = "search:" . Str::slug($query);
-
-        return $this->cacheRemember($key, fn() => $this->repository->search(q: $q, limit: $limit));
+        return $fetch;
     }
 
     /**
      * Store a new record in a transaction-safe way.
+     *
+     * @throws Throwable
      */
-    public function store(BaseDto $dto): Model
+    public function store(BaseDto $dto): EloquentModel
     {
-        $this->validateDto($dto);
+        $this->validateDto(dto: $dto);
 
         return DB::transaction(function () use ($dto) {
             try {
-                $dto = $this->beforeSaveAction($dto);
-                return $this->repository->store($dto->toArray());
-            } catch (\Exception $e) {
-                $this->deleteFileIfExists($dto->file);
+                $dto = $this->beforeSaveAction(dto: $dto);
+
+                $model = $this->repository->store(data: $dto->toArray());
+                DB::afterCommit(function () use ($model) {
+                    $this->clearCache($model->getTable());
+                });
+
+                return $model;
+            } catch (Throwable $e) {
+                logger()->error($e->getMessage());
+                if (property_exists($dto, 'file') && $dto->file !== null) {
+                    $this->deleteFileIfExists($dto->file);
+                }
                 throw $e;
             }
         });
@@ -122,22 +185,34 @@ abstract class BaseService
 
     /**
      * Update an existing record safely and handle file updates.
+     *
+     * @throws Throwable
      */
-    public function update(int $id, BaseDto $dto): Model
+    public function update(int $id, BaseDto $dto): EloquentModel
     {
-        $this->validateDto($dto);
-        $model = $this->repository->find($id);
+        $this->validateDto(dto: $dto);
+        $model = $this->repository->find(id: $id);
 
-        if (!$model) {
-            throw new RecordNotFoundException("Record with id {$id} not found");
+        if (! $model) {
+            throw new RecordNotFoundException(message: "Record with id {$id} not found");
         }
 
         return DB::transaction(function () use ($dto, $model) {
             try {
-                $dto = $this->beforeSaveAction($dto, $model->file);
-                return $this->repository->update($model->id, $dto->toArray())->refresh();
-            } catch (\Exception $e) {
-                $this->deleteFileIfExists($dto->file);
+                $dto = $this->beforeSaveAction(dto: $dto, existingFile: $model->file ?? null);
+
+                $model = $this->repository->update(id: $model->id, data: $dto->toArray());
+
+                DB::afterCommit(function () use ($model) {
+                    $this->clearCache($model->getTable());
+                });
+
+                return $model->refresh();
+            } catch (Throwable $e) {
+                logger()->error($e->getMessage());
+                if (property_exists($dto, 'file') && $dto->file !== null) {
+                    $this->deleteFileIfExists(path: $dto->file);
+                }
                 throw $e;
             }
         });
@@ -146,26 +221,36 @@ abstract class BaseService
     /**
      * Delete a record normally (soft delete if enabled).
      */
-    public function delete(int $id): bool
+    public function delete(int $id, string $type = 'soft'): bool
     {
         $model = $this->repository->find($id);
-        if (!$model) {
-            throw new RecordNotFoundException("Record with id {$id} not found");
-        }
-        $this->beforeDelete($model);
-        return $this->repository->delete($id);
-    }
 
-    /**
-     * Force delete a record from the database (bypass soft deletes).
-     */
-    public function forceDelete(int $id): bool
-    {
-        $model = $this->repository->find($id);
-        if (!$model) {
-            throw new RecordNotFoundException("Record with id {$id} not found");
+        if (! $model) {
+            throw new RecordNotFoundException(message: "Record with id {$id} not found");
         }
-        $this->beforeDelete($model);
-        return $this->repository->forceDelete($id);
+
+        try {
+            DB::transaction(function () use ($id, $type, $model) {
+                if ($type === 'force') {
+                    $this->repository->forceDelete(id: $id);
+
+                    DB::afterCommit(function () use ($model) {
+                        $this->beforeDeleteAction(model: $model);
+                    });
+                } else {
+                    $this->repository->delete(id: $id);
+                }
+
+                DB::afterCommit(function () use ($model) {
+                    $this->clearCache($model->getTable());
+                });
+            });
+
+            return true;
+        } catch (Throwable $e) {
+            logger()->error($e->getMessage());
+
+            return false;
+        }
     }
 }

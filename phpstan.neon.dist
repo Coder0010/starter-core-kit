@@ -1,0 +1,72 @@
+# phpstan.neon.dist
+# PHPStan 2.x + Larastan 3.x configuration optimised for your Laravel package
+
+parameters:
+  # ---------------------------------------------------------------------------
+  # Analysis level (0–9). Start at 6 and raise as your code stabilises.
+  # ---------------------------------------------------------------------------
+  level: 6
+
+  # ---------------------------------------------------------------------------
+  # Directories to analyse
+  # ---------------------------------------------------------------------------
+  paths:
+    - src
+    - tests
+
+  # ---------------------------------------------------------------------------
+  # Exclusions
+  # ---------------------------------------------------------------------------
+  excludePaths:
+    - %rootDir%/../vendor/*
+    - %rootDir%/../examples/*
+    - %rootDir%/../tmp/*
+
+  # ---------------------------------------------------------------------------
+  # Behaviour tuning
+  # ---------------------------------------------------------------------------
+  treatPhpDocTypesAsCertain: false
+  inferPrivatePropertyTypeFromConstructor: true
+
+  # ---------------------------------------------------------------------------
+  # Recognise Laravel container/application as "universal objects"
+  # ---------------------------------------------------------------------------
+  universalObjectCratesClasses:
+    - Illuminate\Contracts\Container\Container
+    - Illuminate\Contracts\Foundation\Application
+
+  # ---------------------------------------------------------------------------
+  # Bootstrap Larastan
+  # ---------------------------------------------------------------------------
+  bootstrapFiles:
+    - vendor/nunomaduro/larastan/bootstrap.php
+
+  # ---------------------------------------------------------------------------
+  # Ignore or relax specific warnings
+  # ---------------------------------------------------------------------------
+  ignoreErrors:
+    # Laravel dynamic methods and macros
+    - '#Call to unknown method Illuminate\\[A-Za-z\\\\]+#'
+
+    # Dynamic properties or attributes Larastan can't infer
+    - '#Property [A-Za-z_\\\\]+ does not exist on [A-Za-z_\\\\]+#'
+
+    # Missing generic type hints (safe for Laravel collections)
+    - identifier: missingType.generics
+
+    # Dynamic collection macros (e.g. paginateOnCollection)
+    - '#Dynamic call to static method Illuminate\\\\Support\\\\Collection.*paginateOnCollection#'
+
+    # False positives for tests using facades
+    - '#Call to an undefined static method Tests\\\\.*#'
+
+    # ✅ Allow env() usage only in the package config file (cross-platform regex)
+    # -
+    #  message: '#larastan\.noEnvCallsOutsideOfConfig#'
+    #  paths:
+    #    - '#(^|[\\/])src[\\/]+config[\\/]+config\.php$#'
+
+# ---------------------------------------------------------------------------
+# Optional: add a baseline file to ignore legacy or noisy errors
+# Run: composer phpstan:baseline
+# ---------------------------------------------------------------------------

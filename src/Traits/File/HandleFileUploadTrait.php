@@ -1,6 +1,6 @@
 <?php
 
-namespace MkamelMasoud\StarterCoreKit\Traits;
+namespace MkamelMasoud\StarterCoreKit\Traits\File;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -11,16 +11,18 @@ trait HandleFileUploadTrait
     protected function handleFileUpload(UploadedFile|string|null $file, ?string $existingFile = null): ?string
     {
         if ($file instanceof UploadedFile) {
-            if ($existingFile && Storage::disk('public')->exists($existingFile)) {
+            if ($existingFile !== null && $existingFile !== '' && Storage::disk('public')->exists($existingFile)) {
                 Storage::disk('public')->delete($existingFile);
             }
 
-            $uploadPath = \Str::of(get_called_class())
+            $uploadPath = Str::of(get_called_class())
                 ->afterLast('\\')
                 ->replace('Service', '')
                 ->plural()
                 ->lower();
-            $filename = uniqid('', true) . '.' . $file->getClientOriginalExtension();
+
+            $filename = uniqid('', true).'.'.$file->getClientOriginalExtension();
+
             return Storage::disk('public')->putFileAs($uploadPath, $file, $filename);
         }
 
@@ -29,7 +31,7 @@ trait HandleFileUploadTrait
 
     protected function deleteFileIfExists(?string $path): void
     {
-        if ($path && Storage::disk('public')->exists($path)) {
+        if ($path !== null && $path !== '' && Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
         }
     }

@@ -2,15 +2,16 @@
 
 namespace MkamelMasoud\StarterCoreKit;
 
+use Illuminate\Foundation\Application as ApplicationFoundation;
 use Illuminate\Support\ServiceProvider;
-use MkamelMasoud\StarterCoreKit\Providers\{
-    ConfigServiceProvider,
-    ExceptionServiceProvider,
-    MiddlewareServiceProvider,
-    RepositoryServiceProvider,
-    ResourceServiceProvider,
-    MacroServiceProvider
-};
+use MkamelMasoud\StarterCoreKit\Providers\ConfigServiceProvider;
+use MkamelMasoud\StarterCoreKit\Providers\ExceptionServiceProvider;
+use MkamelMasoud\StarterCoreKit\Providers\MacroServiceProvider;
+use MkamelMasoud\StarterCoreKit\Providers\MiddlewareServiceProvider;
+use MkamelMasoud\StarterCoreKit\Providers\RepositoryServiceProvider;
+use MkamelMasoud\StarterCoreKit\Providers\ResourceServiceProvider;
+use MkamelMasoud\StarterCoreKit\Providers\SupportServiceProvider;
+use MkamelMasoud\StarterCoreKit\Services\Ai\AiClientService;
 
 /**
  * Class PackageServiceProvider
@@ -18,7 +19,7 @@ use MkamelMasoud\StarterCoreKit\Providers\{
  * The main entry point for the StarterCoreKit package.
  * It registers all internal providers and manages publishing.
  *
- * @property Application $app
+ * @property ApplicationFoundation $app
  */
 class PackageServiceProvider extends ServiceProvider
 {
@@ -53,6 +54,9 @@ class PackageServiceProvider extends ServiceProvider
 
         $this->app->register(MiddlewareServiceProvider::class);
         $this->app->register(MacroServiceProvider::class);
+        $this->app->register(SupportServiceProvider::class);
+
+        $this->app->singleton('ai-client', fn () => new AiClientService);
     }
 
     /**
