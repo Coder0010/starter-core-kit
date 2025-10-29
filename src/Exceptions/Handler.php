@@ -24,6 +24,7 @@ class Handler extends LaravelHandler
                     if ($appDebug) {
                         $customPayload['exception_type'] = 'Custom Exception';
                         $customPayload['file'] = $e->getFile();
+                        $customPayload['line'] = $e->getLine();
                     }
 
                     if ($e instanceof ValidationException) {
@@ -45,6 +46,7 @@ class Handler extends LaravelHandler
             if ($appDebug) {
                 $defaultPayload['exception_type'] = 'Default Exception';
                 $defaultPayload['file'] = $e->getFile();
+                $defaultPayload['line'] = $e->getLine();
             }
 
             return response()->json($defaultPayload, Response::HTTP_INTERNAL_SERVER_ERROR);

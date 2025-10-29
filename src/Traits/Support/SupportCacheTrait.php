@@ -16,18 +16,20 @@ trait SupportCacheTrait
     /**
      * Resolve cache context and configuration for a given table.
      */
-    private function resolveCacheConfigs(string $table, ?string $cacheKey = null): array
-    {
+    private function resolveCacheConfigs(
+        string $table,
+        ?string $cacheKey = null
+    ): array {
         $tag = "{$table}_tag";
         $store = Cache::getStore();
         $isUseTags = $store instanceof TaggableStore;
         $cacheDriver = $isUseTags ? Cache::tags([$tag]) : Cache::store();
 
         $context = [
-            'tag'        => $tag,
-            'store'      => $store,
-            'isUseTags'  => $isUseTags,
-            'cacheDriver'=> $cacheDriver,
+            'tag' => $tag,
+            'store' => $store,
+            'isUseTags' => $isUseTags,
+            'cacheDriver' => $cacheDriver,
         ];
 
         if ($cacheKey !== null) {
@@ -45,7 +47,7 @@ trait SupportCacheTrait
         string $cacheKey,
         Closure $callBack
     ): mixed {
-        if (! resolveIsCacheEnabled()) {
+        if (!resolveIsCacheEnabled()) {
             return $callBack();
         }
 
@@ -54,7 +56,8 @@ trait SupportCacheTrait
             $cacheContext = $this->resolveCacheConfigs($table, $cacheKey);
             $cacheDriver = $cacheContext['cacheDriver'];
             $fullKey = $cacheContext['fullKey'];
-            // 🧩 Return cached value if present
+
+            // Quick return if already cached
             if ($cacheDriver->has($fullKey)) {
                 logger()->info("✅ Retrieved cache for table [{$table}] with key [{$fullKey}].");
                 return $cacheDriver->get($fullKey);
@@ -90,7 +93,7 @@ trait SupportCacheTrait
      */
     public function clearCache(string $table): void
     {
-        if (! resolveIsCacheEnabled()) {
+        if (!resolveIsCacheEnabled()) {
             return;
         }
 

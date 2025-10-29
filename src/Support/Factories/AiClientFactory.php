@@ -3,20 +3,24 @@
 namespace MkamelMasoud\StarterCoreKit\Support\Factories;
 
 use MkamelMasoud\StarterCoreKit\Contracts\AiProviderContract;
-use MkamelMasoud\StarterCoreKit\Exceptions\AiProviderNotFoundException;
-use MkamelMasoud\StarterCoreKit\Services\Ai\AiProviders\OpenAiProviderService;
-use MkamelMasoud\StarterCoreKit\Services\Ai\AiProviders\RouterAiProviderService;
+use MkamelMasoud\StarterCoreKit\Exceptions\{AiConfigNotFoundException, AiProviderNotFoundException};
+use MkamelMasoud\StarterCoreKit\Services\Ai\AiProviders\{OpenAiProviderService, RouterAiProviderService};
 
 class AiClientFactory
 {
+    /**
+     * @throws AiProviderNotFoundException|AiConfigNotFoundException
+     */
     public static function make(?string $provider = null): AiProviderContract
     {
         $provider = $provider ?? config('starter-core-kit.ai.default');
 
-        return match ($provider) {
+        $instance = match ($provider) {
             'openai' => app(OpenAiProviderService::class),
             'router' => app(RouterAiProviderService::class),
-            default => throw new AiProviderNotFoundException("Unsupported AI provider: {$provider}"),
+            default => throw AiProviderNotFoundException::make($provider),
         };
+
+        return $instance->boot();
     }
 }

@@ -69,8 +69,8 @@ class PackageServiceProvider extends ServiceProvider
         // ✅ Centralized publishing configuration
         if ($this->app->runningInConsole()) {
             $this->publishes([
-//                "{$basePath}/config/config.php" => config_path('starter-core-kit.php'),
-                "{$basePath}/config/repositories.php" => config_path('repositories.php'),
+//                "{$basePath}/../config/config.php" => config_path('starter-core-kit.php'),
+                "{$basePath}/../config/repositories.php" => config_path('repositories.php'),
                 "{$basePath}/lang" => resource_path('lang'),
             ], 'starter-core-kit');
         }
