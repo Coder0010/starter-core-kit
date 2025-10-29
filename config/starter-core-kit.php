@@ -21,17 +21,50 @@ return [
     ],
 
     'ai' => [
-        'default' => env('AI_PROVIDER', 'router'),
+        'enabled' => env('AI_ENABLED', true),
+        'default' => env('AI_PROVIDER', 'openai'),
+
+        'cache' => [
+            'enabled' => env('AI_CACHE_ENABLED', true),
+            'ttl' => env('AI_CACHE_TTL', 600),
+        ],
+
+        'timeout' => env('AI_PROVIDER_TIMEOUT', 20),
+        'retry' => [
+            'attempts' => env('AI_PROVIDER_RETRY_ATTEMPTS', 2),
+            'delay' => env('AI_PROVIDER_RETRY_DELAY_MS', 500),
+        ],
+
+        'logging' => [
+            'enabled' => env('AI_PROVIDER_LOGGING_ENABLED', true),
+        ],
+
+        'models' =>[
+            'default' => [
+                'gpt-4o-mini',
+                'openai/gpt-4o',
+                'anthropic/claude-3.5-sonnet',
+                'google/gemini-1.5-pro',
+                'meta-llama/llama-3.1-70b',
+                'mistralai/mixtral-8x22b',
+                'deepseek/deepseek-chat',
+            ],
+        ],
+
         'providers' => [
             'openai' => [
-                'apikey' => env('OPENAI_API_KEY'),
-                'endpoint' => env('OPENAI_ENDPOINT', 'https://api.openai.com/v1/chat/completions'),
+                'api_key' => env('OPENAI_API_KEY'),
+                'base_url' => env('OPENAI_BASEURL', 'https://api.openai.com'),
+                'version' => env('OPENAI_VERSION', 'v1'),
+                'end_point' => env('OPENAI_ENDPOINT', 'chat/completions'),
                 'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
             ],
             'router' => [
-                'apikey' => env('ROUTER_API_KEY'),
-                'endpoint' => env('ROUTER_ENDPOINT', 'https://api.router.ai/v1/generate'),
-                'model' => env('OPENROUTER_MODEL', 'gpt-4o-mini'),
+                'api_key' => env('ROUTER_API_KEY'),
+                'base_url' => env('ROUTER_BASEURL', 'https://openrouter.ai/api'),
+                'version' => env('ROUTER_VERSION', 'v1'),
+                'end_point' => env('ROUTER_ENDPOINT', 'chat/completions'),
+                'model' => env('ROUTER_MODEL', 'gpt-4o-mini'),
             ],
         ],
     ],

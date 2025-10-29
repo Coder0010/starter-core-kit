@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use MkamelMasoud\StarterCoreKit\Providers\ConfigServiceProvider;
 use MkamelMasoud\StarterCoreKit\Providers\ExceptionServiceProvider;
 use MkamelMasoud\StarterCoreKit\Providers\MacroServiceProvider;
+use MkamelMasoud\StarterCoreKit\Providers\ValidaterServiceProvider;
 use MkamelMasoud\StarterCoreKit\Providers\MiddlewareServiceProvider;
 use MkamelMasoud\StarterCoreKit\Providers\RepositoryServiceProvider;
 use MkamelMasoud\StarterCoreKit\Providers\ResourceServiceProvider;
@@ -33,8 +34,9 @@ class PackageServiceProvider extends ServiceProvider
         ExceptionServiceProvider::class,
         MiddlewareServiceProvider::class,
         RepositoryServiceProvider::class,
-        ResourceServiceProvider::class,
         MacroServiceProvider::class,
+        SupportServiceProvider::class,
+        ValidaterServiceProvider::class,
     ];
 
     /**
@@ -42,20 +44,14 @@ class PackageServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Always needed providers
-        $this->app->register(ConfigServiceProvider::class);
-        $this->app->register(ExceptionServiceProvider::class);
-        $this->app->register(RepositoryServiceProvider::class);
-
         // Register conditionally
         if ($this->app->runningInConsole()) {
             $this->app->register(ResourceServiceProvider::class);
         }
 
-        $this->app->register(MiddlewareServiceProvider::class);
-        $this->app->register(MacroServiceProvider::class);
-        $this->app->register(SupportServiceProvider::class);
-
+        foreach ($this->providers as $provider) {
+            $this->app->register($provider);
+        }
         $this->app->singleton('ai-client', fn () => new AiClientService);
     }
 
@@ -69,8 +65,8 @@ class PackageServiceProvider extends ServiceProvider
         // ✅ Centralized publishing configuration
         if ($this->app->runningInConsole()) {
             $this->publishes([
-//                "{$basePath}/config/config.php" => config_path('starter-core-kit.php'),
-                "{$basePath}/config/repositories.php" => config_path('repositories.php'),
+//                "{$basePath}/../config/config.php" => config_path('starter-core-kit.php'),
+                "{$basePath}/../config/repositories.php" => config_path('repositories.php'),
                 "{$basePath}/lang" => resource_path('lang'),
             ], 'starter-core-kit');
         }

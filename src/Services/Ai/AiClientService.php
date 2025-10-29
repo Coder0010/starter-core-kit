@@ -2,24 +2,28 @@
 
 namespace MkamelMasoud\StarterCoreKit\Services\Ai;
 
+namespace MkamelMasoud\StarterCoreKit\Services\Ai;
+
+use MkamelMasoud\StarterCoreKit\Contracts\AiProviderContract;
 use MkamelMasoud\StarterCoreKit\Support\Factories\AiClientFactory;
 
 class AiClientService
 {
-    public function __construct(
-        protected ?string $provider = null
-    ) {}
+    protected AiProviderContract $client;
 
-    /**
-     * Send a prompt to the AI provider and return the generated text.
-     *
-     * @param  string  $prompt  The user's input text to send to the AI.
-     * @param  array<string, mixed>  $options  Optional configuration, such as:
-     *                                         - 'system_prompt' (string): Instruction or role for the AI.
-     * @return string|null The AI's response text, or null on failure.
-     */
-    public function ask(string $prompt, array $options = []): ?string
+    public function __construct(?string $provider = null)
     {
-        return AiClientFactory::make($this->provider)->ask($prompt, $options);
+        $this->client = AiClientFactory::make($provider);
+    }
+
+    public function setPrompt(string $role, string $prompt): self
+    {
+        $this->client->setPrompt($role, $prompt);
+        return $this;
+    }
+
+    public function ask(string $prompt): ?string
+    {
+        return $this->client->ask($prompt);
     }
 }

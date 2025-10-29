@@ -19,9 +19,10 @@ A comprehensive, production-ready Laravel starter package that provides essentia
 
 ### 🤖 AI Integration
 - **Multi-Provider AI Support** - OpenAI and Router.ai integration
-- **Configurable AI Providers** - Easy switching between AI services
-- **AI Client Service** - Simple interface for AI interactions
-- **Factory Pattern Implementation** - Clean provider management
+- **Simple Factory Pattern** - Clean provider instantiation
+- **AI Client Service** - Easy-to-use interface for AI interactions
+- **Built-in Caching** - Automatic response caching with TTL
+- **Comprehensive Logging** - Detailed request/response logging
 
 ### 🏗️ Repository & Service Patterns
 - **Base Repository Pattern** - Eloquent-based repository implementation
@@ -50,79 +51,105 @@ A comprehensive, production-ready Laravel starter package that provides essentia
 
 ```
 starter-core-kit/
-├── src/
-│   ├── PackageServiceProvider.php
-│   ├── config/
-│   │   ├── config.php
-│   │   └── repositories.php
-│   ├── Contracts/
-│   │   ├── AiProviderContract.php
-│   │   ├── MiddlewareContract.php
-│   │   ├── ServiceContract.php
-│   │   ├── SortableContract.php
-│   │   └── Repositories/
-│   │       ├── BaseRepositoryContract.php
-│   │       ├── DeletableRepositoryContract.php
-│   │       ├── ReadableRepositoryContract.php
-│   │       └── WritableRepositoryContract.php
-│   ├── Core/
-│   │   ├── BaseDto.php
-│   │   ├── BaseEntity.php
-│   │   ├── BaseService.php
-│   │   ├── Repositories/
-│   │   │   ├── BaseEloquentRepository.php
-│   │   │   └── Traits/
-│   │   │       └── BuildQueryTrait.php
-│   │   └── Services/
-│   │       └── Traits/
-│   │           ├── DeletableServiceTrait.php
-│   │           ├── ReadableServiceTrait.php
-│   │           └── WritableServiceTrait.php
-│   ├── Exceptions/
-│   │   ├── AiProviderNotFoundException.php
-│   │   └── Handler.php
-│   ├── lang/
-│   │   ├── ar/
-│   │   │   └── exceptions.php
-│   │   └── en/
-│   │       └── exceptions.php
-│   ├── Middleware/
-│   │   ├── ApiCheckHeadersMiddleware.php
-│   │   ├── ClearLoggerMiddleware.php
-│   │   └── SetLocaleFromHeaderMiddleware.php
-│   ├── Providers/
-│   │   ├── ConfigServiceProvider.php
-│   │   ├── ExceptionServiceProvider.php
-│   │   ├── MacroServiceProvider.php
-│   │   ├── MiddlewareServiceProvider.php
-│   │   ├── RepositoryServiceProvider.php
-│   │   ├── ResourceServiceProvider.php
-│   │   └── SupportServiceProvider.php
-│   ├── Rules/
-│   │   └── Validation/
-│   │       └── NoHtmlRule.php
-│   ├── Services/
-│   │   └── Ai/
-│   │       ├── AiClientService.php
-│   │       └── AiProviders/
-│   │           ├── OpenAiProviderService.php
-│   │           └── RouterAiProviderService.php
-│   ├── Support/
-│   │   ├── Factories/
-│   │   │   └── AiClientFactory.php
-│   │   └── helpers/
-│   │       └── functions.php
-│   └── Traits/
-│       ├── Api/
-│       │   └── ApiResponsesTrait.php
-│       ├── File/
-│       │   └── HandleFileUploadTrait.php
-│       ├── Service/
-│       │   └── ServiceSupportTrait.php
-│       └── Support/
-│           ├── SupportCacheTrait.php
-│           └── SupportSortableTrait.php
-└── tmp/
++---src
+|   PackageServiceProvider.php
+|
++---Contracts
+|   |   AiProviderContract.php
+|   |   MiddlewareContract.php
+|   |   ServiceContract.php
+|   |   SortableContract.php
+|   |
+|   \---Repositories
+|           BaseRepositoryContract.php
+|           DeletableRepositoryContract.php
+|           ReadableRepositoryContract.php
+|           WritableRepositoryContract.php
+|
++---Core
+|   |   BaseDto.php
+|   |   BaseEntity.php
+|   |   BaseService.php
+|   |
+|   +---Ai
+|   |   |   BaseAIProvider.php
+|   |   |
+|   |   \---Traits
+|   |           BuildRequestTrait.php
+|   |           HandlesValidationTrait.php
+|   |           ManageStateTrait.php
+|   |
+|   +---Repositories
+|   |   |   BaseEloquentRepository.php
+|   |   |
+|   |   \---Traits
+|   |           BuildQueryTrait.php
+|   |
+|   \---Services
+|       \---Traits
+|               DeletableServiceTrait.php
+|               ReadableServiceTrait.php
+|               WritableServiceTrait.php
+|
++---Exceptions
+|       AiConfigNotFoundException.php
+|       AiProviderNotFoundException.php
+|       Handler.php
+|
++---lang
+|   +---ar
+|   |       exceptions.php
+|   |
+|   \---en
+|           exceptions.php
+|
++---Middleware
+|       ApiCheckHeadersMiddleware.php
+|       ClearLoggerMiddleware.php
+|       SetLocaleFromHeaderMiddleware.php
+|
++---Providers
+|       ConfigServiceProvider.php
+|       ExceptionServiceProvider.php
+|       MacroServiceProvider.php
+|       MiddlewareServiceProvider.php
+|       RepositoryServiceProvider.php
+|       ResourceServiceProvider.php
+|       SupportServiceProvider.php
+|
++---Rules
+|   \---Validation
+|           NoHtmlRule.php
+|
++---Services
+|   \---Ai
+|       |   AiClientService.php
+|       |
+|       +---AiProviders
+|       |       OpenAiProviderService.php
+|       |       RouterAiProviderService.php
+|       |
+|       \---Providers
++---Support
+|   +---Factories
+|   |       AiClientFactory.php
+|   |
+|   \---helpers
+|           functions.php
+|
+\---Traits
+    +---Api
+    |       ApiResponsesTrait.php
+    |
+    +---File
+    |       HandleFileUploadTrait.php
+    |
+    +---Service
+    |       ServiceSupportTrait.php
+    |
+    \---Support
+            SupportCacheTrait.php
+            SupportSortableTrait.php
 ```
 
 ---
@@ -156,19 +183,22 @@ This will publish:
 
 ## 🚀 Quick Start
 
-### 1. Basic Usage
+### 1. Basic AI Usage
 
 ```php
 use MkamelMasoud\StarterCoreKit\Services\Ai\AiClientService;
 
-// AI Integration
+// AI Integration - Simple usage
 $aiClient = app('ai-client');
 $response = $aiClient->ask('Hello, how are you?');
 
-// With options
-$response = $aiClient->ask('Write a poem', [
-    'system_prompt' => 'You are a creative poet'
-]);
+// With system prompt
+$aiClient->setPrompt('system', 'You are a helpful assistant');
+$response = $aiClient->ask('Write a poem about coding');
+
+// Using specific provider
+$aiClient = new AiClientService('openai');
+$response = $aiClient->ask('Explain Laravel');
 ```
 
 ### 2. Repository Pattern
@@ -244,17 +274,39 @@ return [
     ],
     
     'ai' => [
-        'default' => env('AI_PROVIDER', 'router'),
+        'enabled' => env('AI_ENABLED', true),
+        'default' => env('AI_PROVIDER', 'openai'),
+        'fallback' => env('AI_PROVIDER_FALLBACK', 'router'),
+        
+        'cache' => [
+            'enabled' => env('AI_CACHE_ENABLED', true),
+            'ttl' => env('AI_CACHE_TTL', 600),
+        ],
+        
+        'timeout' => env('AI_PROVIDER_TIMEOUT', 20),
+        'retry' => [
+            'attempts' => env('AI_PROVIDER_RETRY_ATTEMPTS', 2),
+            'delay' => env('AI_PROVIDER_RETRY_DELAY_MS', 500),
+        ],
+        
+        'logging' => [
+            'enabled' => env('AI_PROVIDER_LOGGING_ENABLED', true),
+        ],
+        
         'providers' => [
             'openai' => [
-                'apikey' => env('OPENAI_API_KEY'),
-                'endpoint' => env('OPENAI_ENDPOINT'),
+                'api_key' => env('OPENAI_API_KEY'),
+                'base_url' => env('OPENAI_BASEURL', 'https://api.openai.com'),
+                'version' => env('OPENAI_VERSION', 'v1'),
+                'end_point' => env('OPENAI_ENDPOINT', 'chat/completions'),
                 'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
             ],
             'router' => [
-                'apikey' => env('ROUTER_API_KEY'),
-                'endpoint' => env('ROUTER_ENDPOINT'),
-                'model' => env('OPENROUTER_MODEL', 'gpt-4o-mini'),
+                'api_key' => env('ROUTER_API_KEY'),
+                'base_url' => env('ROUTER_BASEURL', 'https://openrouter.ai/api'),
+                'version' => env('ROUTER_VERSION', 'v1'),
+                'end_point' => env('ROUTER_ENDPOINT', 'chat/completions'),
+                'model' => env('ROUTER_MODEL', 'gpt-4o-mini'),
             ],
         ],
     ],
@@ -265,9 +317,33 @@ return [
 
 ```env
 # AI Configuration
-AI_PROVIDER=router
+AI_ENABLED=true
+AI_PROVIDER=openai
+AI_PROVIDER_FALLBACK=router
+
+# OpenAI Configuration
 OPENAI_API_KEY=your_openai_key
+OPENAI_BASEURL=https://api.openai.com
+OPENAI_VERSION=v1
+OPENAI_ENDPOINT=chat/completions
+OPENAI_MODEL=gpt-4o-mini
+
+# Router Configuration
 ROUTER_API_KEY=your_router_key
+ROUTER_BASEURL=https://openrouter.ai/api
+ROUTER_VERSION=v1
+ROUTER_ENDPOINT=chat/completions
+ROUTER_MODEL=gpt-4o-mini
+
+# AI Cache Configuration
+AI_CACHE_ENABLED=true
+AI_CACHE_TTL=600
+
+# AI Request Configuration
+AI_PROVIDER_TIMEOUT=20
+AI_PROVIDER_RETRY_ATTEMPTS=2
+AI_PROVIDER_RETRY_DELAY_MS=500
+AI_PROVIDER_LOGGING_ENABLED=true
 
 # Middleware Configuration
 SET_LOCALE=true
@@ -378,13 +454,18 @@ composer pint
 $response = app('ai-client')->ask('Your prompt here');
 
 // With system prompt
-$response = app('ai-client')->ask('Your prompt', [
-    'system_prompt' => 'You are a helpful assistant'
-]);
+$aiClient = app('ai-client');
+$aiClient->setPrompt('system', 'You are a helpful assistant');
+$response = $aiClient->ask('Your prompt');
 
 // Using specific provider
 $aiClient = new AiClientService('openai');
 $response = $aiClient->ask('Your prompt');
+
+// Advanced usage with configuration
+$aiClient = new AiClientService('router');
+$aiClient->setPrompt('system', 'You are a coding expert');
+$response = $aiClient->ask('Explain Laravel middleware');
 ```
 
 ### Repository Methods
@@ -452,7 +533,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Laravel Framework
 - OpenAI API
-- Router.ai API
+- OpenRouter API
 - The Laravel community
 
 ---

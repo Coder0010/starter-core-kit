@@ -8,6 +8,11 @@ use Illuminate\Translation\PotentiallyTranslatedString;
 
 class NoHtmlRule implements ValidationRule
 {
+    public static function handle(): self
+    {
+        return new self();
+    }
+
     /**
      * @param  Closure(string): PotentiallyTranslatedString  $fail
      */

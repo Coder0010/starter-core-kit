@@ -6,5 +6,8 @@ use Exception;
 
 class AiProviderNotFoundException extends Exception
 {
-    protected $message = 'Ai provider not found';
+    public static function make(string $provider): self
+    {
+        return new self("AI provider [{$provider}] is not configured.");
+    }
 }

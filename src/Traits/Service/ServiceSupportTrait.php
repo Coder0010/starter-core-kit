@@ -51,6 +51,6 @@ trait ServiceSupportTrait
 
     protected function beforeDeleteAction(EloquentModel $model): void
     {
-        // by default leave it blank for all service
+        // by default leave it blank for all services unless needed
     }
 }

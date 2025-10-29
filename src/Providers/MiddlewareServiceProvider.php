@@ -9,7 +9,7 @@ use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\ServiceProvider;
 use MkamelMasoud\StarterCoreKit\Middleware\ApiCheckHeadersMiddleware;
 use MkamelMasoud\StarterCoreKit\Middleware\ClearLoggerMiddleware;
-use MkamelMasoud\StarterCoreKit\Middleware\SetLocaleFromHeaderMiddleware;
+use MkamelMasoud\StarterCoreKit\Middleware\SetLocaleMiddleware;
 
 /**
  * Class MiddlewareServiceProvider
@@ -32,13 +32,14 @@ class MiddlewareServiceProvider extends ServiceProvider
 
         $kernel = app(Kernel::class);
         $middlewares = [
-            SetLocaleFromHeaderMiddleware::class => config('starter-core-kit.middlewares.set_locale', true),
             ClearLoggerMiddleware::class => config('starter-core-kit.middlewares.clear_logger', false),
             ApiCheckHeadersMiddleware::class => config('starter-core-kit.middlewares.api_check_headers', true),
         ];
         SupportCollection::make($middlewares)
             ->filter()
             ->each(fn ($enabled, $middlewareClass) => $kernel->pushMiddleware($middlewareClass));
+        $kernel->appendMiddlewareToGroup('api', SetLocaleMiddleware::class);
+        $kernel->appendMiddlewareToGroup('web', SetLocaleMiddleware::class);
         self::$middlewareRegistered = true;
     }
 }
